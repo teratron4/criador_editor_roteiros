@@ -265,7 +265,10 @@ const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character
 const SELECT_OPTION_ICONS = {
   etapa: { default: "school", "ETAPA 1": "looks_one", "ETAPA 2": "looks_two", "ETAPA 3": "looks_3", "ETAPA 4": "looks_4", "RECUPERAÇÃO": "healing" },
   tipo: { default: "task_alt", "AVALIAÇÃO PARCIAL": "task_alt", "AVALIAÇÃO GLOBAL": "select_all", "AVALIAÇÃO DE RECUPERAÇÃO": "restart_alt" },
-  docente: { default: "manage_accounts" }
+  docente: { default: "manage_accounts" },
+  "sheet-stage": { default: "school", "ETAPA 1": "looks_one", "ETAPA 2": "looks_two", "ETAPA 3": "looks_3", "ETAPA 4": "looks_4", "RECUPERAÇÃO": "healing" },
+  "sheet-class": { default: "school", "6º ANO": "looks_6", "7º ANO": "looks_6", "8º ANO": "looks_6", "9º ANO": "looks_6", "1º ANO EM": "looks_one", "2º ANO EM": "looks_two", "3º ANO EM": "looks_3" },
+  "sheet-assessment": { default: "fact_check", AP: "task_alt", AG: "select_all" }
 };
 
 function iconForSubject(subject) {
@@ -388,7 +391,7 @@ function initializeIconSelect(select) {
 }
 
 function initializeIconSelects() {
-  ["etapa", "tipo", "docente"].forEach((id) => initializeIconSelect(byId(id)));
+  ["etapa", "tipo", "docente", "sheet-stage", "sheet-class", "sheet-assessment"].forEach((id) => initializeIconSelect(byId(id)));
 }
 
 /* 5. Comportamento comum: menu colapsável adequado a telas pequenas. */
@@ -1120,32 +1123,245 @@ function validateEditableRecord(record) {
   });
 }
 
-/* 18. Mostra os registros já salvos, com ação para apagar cada um. */
+/* 18. Consulta direta à planilha e apresentação tabular por disciplina. */
+function initializeSheetSearch() {
+  const form = byId("sheet-search-form");
+  const resultsPanel = byId("sheet-results-panel");
+  const resultsContainer = byId("sheet-results");
+  const status = byId("sheet-search-status");
+  const searchButton = byId("sheet-search-button");
+  const savePdfButton = byId("sheet-save-pdf");
+  if (!form || !resultsPanel || !resultsContainer || !status || !searchButton) return;
+
+  savePdfButton?.addEventListener("click", () => window.print());
+  const scheduleControlPanel = byId("schedule-control-panel");
+  const secondCallStart = byId("second-call-start");
+  const secondCallEnd = byId("second-call-end");
+  const secondCallPreview = byId("second-call-preview");
+  const formatScheduleDate = (value) => value
+    ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(`${value}T00:00:00Z`))
+    : "DATA NÃO INFORMADA";
+  const updateSecondCallPreview = () => {
+    if (!secondCallPreview || !secondCallStart || !secondCallEnd) return;
+    const hasDates = Boolean(secondCallStart.value || secondCallEnd.value);
+    secondCallPreview.classList.toggle("hidden", !hasDates);
+    byId("second-call-start-preview").textContent = secondCallStart.value ? formatScheduleDate(secondCallStart.value) : "A DEFINIR";
+    byId("second-call-end-preview").textContent = secondCallEnd.value ? formatScheduleDate(secondCallEnd.value) : "A DEFINIR";
+  };
+  secondCallStart?.addEventListener("input", updateSecondCallPreview);
+  secondCallEnd?.addEventListener("input", updateSecondCallPreview);
+  const fitResultsToA4 = () => {
+    if (!resultsPanel || !resultsContainer.childElementCount) return;
+    resultsPanel.style.zoom = "1";
+    const scheduleEditor = byId("exam-schedule-editor");
+    const previousDisplay = scheduleEditor?.style.display ?? "";
+    if (scheduleEditor) scheduleEditor.style.display = "none";
+    const printableHeightPx = (297 - 16 - 9) * 96 / 25.4;
+    const contentHeightPx = resultsPanel.scrollHeight;
+    if (scheduleEditor) scheduleEditor.style.display = previousDisplay;
+    if (contentHeightPx > printableHeightPx) {
+      resultsPanel.style.zoom = String(printableHeightPx / contentHeightPx);
+    }
+  };
+  window.addEventListener("beforeprint", fitResultsToA4);
+  window.addEventListener("afterprint", () => { resultsPanel.style.zoom = ""; });
+  const statusText = status.querySelector("span:last-child");
+  const showStatus = (message, mode = "info") => {
+    const icons = { info: "info", loading: "progress_activity", success: "check_circle", error: "error" };
+    status.className = `sheet-search-status is-${mode}`;
+    status.querySelector(".material-symbols-rounded").textContent = icons[mode] || icons.info;
+    statusText.textContent = message;
+  };
+
+  const normalizeSubjectKey = (value) => {
+    const name = String(value || "").trim().toLocaleUpperCase("pt-BR")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ");
+    if (/^(LINGUA )?PORTUGUESA?$/.test(name)) return "PORTUGUES";
+    if (/^(PRODUCAO TEXTUAL|LABORATORIO DE REDACAO|REDACAO)$/.test(name)) return "REDACAO";
+    return name;
+  };
+  const normalizeStage = (value) => String(value || "").trim().toLocaleUpperCase("pt-BR").replace(/\s+/g, " ");
+  const normalizeAssessment = (value) => {
+    const name = String(value || "").trim().toLocaleUpperCase("pt-BR");
+    if (name === "AP" || name.includes("AVALIAÇÃO PARCIAL") || name.includes("AVALIACAO PARCIAL")) return "AP";
+    if (name === "AG" || name.includes("AVALIAÇÃO GLOBAL") || name.includes("AVALIACAO GLOBAL")) return "AG";
+    return name;
+  };
+
+  const renderResults = (records, etapa, turma, tipo) => {
+    const catalog = CLASS_DATA[turma] || [];
+    const subjectsByKey = new Map();
+    catalog.forEach(({ professor, disciplinas }) => (disciplinas || []).forEach((disciplina) => {
+      const key = normalizeSubjectKey(disciplina);
+      if (!subjectsByKey.has(key)) subjectsByKey.set(key, { disciplina, professores: new Set(), registros: [] });
+      subjectsByKey.get(key).professores.add(professor);
+    }));
+
+    records.forEach((record) => {
+      const key = normalizeSubjectKey(record.disciplina);
+      if (!key) return;
+      if (!subjectsByKey.has(key)) subjectsByKey.set(key, { disciplina: String(record.disciplina).trim(), professores: new Set(), registros: [] });
+      const subject = subjectsByKey.get(key);
+      if (record.disciplina) subject.disciplina = String(record.disciplina).trim();
+      if (record.docente) subject.professores.add(String(record.docente).trim());
+      subject.registros.push(record);
+    });
+
+    const subjects = [...subjectsByKey.values()].sort((a, b) => a.disciplina.localeCompare(b.disciplina, "pt-BR"));
+    byId("sheet-results-title").textContent = `ROTEIROS DE ESTUDOS DA ${etapa}`;
+    byId("sheet-results-context").textContent = `${turma}  ·  ${tipo === "AP" ? "AVALIAÇÃO PARCIAL" : "AVALIAÇÃO GLOBAL"}`;
+    byId("sheet-result-count").textContent = `${subjects.length} ${subjects.length === 1 ? "disciplina" : "disciplinas"}`;
+    const rows = subjects.map(({ disciplina, professores, registros }) => {
+      const teachers = [...professores].filter(Boolean).sort((a, b) => a.localeCompare(b, "pt-BR"));
+      const teacherMarkup = teachers.map((teacher) => `<span class="sheet-teacher-name">${escapeHtml(teacher)}</span>`).join("");
+      const content = registros.length
+        ? registros.map((record) => {
+          const details = record.data ? `<div class="sheet-content-meta">Recebido em ${escapeHtml(record.data)}</div>` : "";
+          return `<div class="sheet-content-entry">${details}<div class="sheet-content-text">${escapeHtml(record.conteudo || "").replace(/\n/g, "<br>")}</div></div>`;
+        }).join("")
+        : '<span class="sheet-not-found"><span class="material-symbols-rounded" aria-hidden="true">info</span> SEM ROTEIRO CADASTRADO</span>';
+      return `<tr><th scope="row"><div class="sheet-subject-cell"><span class="sheet-subject-name"><span class="material-symbols-rounded" aria-hidden="true">${escapeHtml(iconForSubject(disciplina))}</span><span>${escapeHtml(disciplina)}</span></span>${teacherMarkup ? `<div class="sheet-subject-teachers">${teacherMarkup}</div>` : ""}</div></th><td>${content}</td></tr>`;
+    }).join("");
+    if (!subjects.length) {
+      resultsContainer.innerHTML = '<div class="empty-state sheet-empty-state"><span class="material-symbols-rounded" aria-hidden="true">event_busy</span><span>Não há disciplinas cadastradas para esta turma.</span></div>';
+    } else {
+      resultsContainer.innerHTML = `<div class="sheet-table-wrap"><table class="sheet-content-table"><thead><tr><th scope="col">DISCIPLINA / PROFESSOR</th><th scope="col">ROTEIRO DA AVALIAÇÃO</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+    resultsPanel.classList.remove("hidden");
+    scheduleControlPanel?.classList.remove("hidden");
+    initializeExamSchedule(turma, catalog);
+    updateSecondCallPreview();
+  };
+
+  const WEEKDAYS = [
+    { value: "SEGUNDA-FEIRA", short: "SEGUNDA-FEIRA" },
+    { value: "TERÇA-FEIRA", short: "TERÇA-FEIRA" },
+    { value: "QUARTA-FEIRA", short: "QUARTA-FEIRA" },
+    { value: "QUINTA-FEIRA", short: "QUINTA-FEIRA" },
+    { value: "SEXTA-FEIRA", short: "SEXTA-FEIRA" }
+  ];
+  const initializeExamSchedule = (turma, catalog) => {
+    const editor = byId("exam-schedule-editor");
+    const preview = byId("exam-schedule-preview");
+    const dayContainer = byId("exam-schedule-days");
+    if (!editor || !preview || !dayContainer) return;
+
+    const disciplines = [...new Set((catalog || []).flatMap((entry) => entry.disciplinas || []))]
+      .sort((a, b) => a.localeCompare(b, "pt-BR"));
+    const scheduleState = { turma, days: WEEKDAYS.map((day) => ({ weekday: day.value, date: "", subjects: [] })) };
+    editor.classList.remove("hidden");
+    preview.classList.add("hidden");
+    dayContainer.innerHTML = scheduleState.days.map((day, index) => `
+      <fieldset class="exam-day-card" data-exam-day="${index}">
+        <legend><span class="material-symbols-rounded" aria-hidden="true">event</span> DIA ${index + 1}</legend>
+        <label class="exam-schedule-label" for="exam-weekday-${index}">DIA DA SEMANA</label>
+        <select id="exam-weekday-${index}" class="exam-weekday-select" aria-label="Dia da semana para o dia ${index + 1}">${WEEKDAYS.map((option) => `<option value="${option.value}" ${option.value === day.weekday ? "selected" : ""}>${option.short}</option>`).join("")}</select>
+        <label class="exam-schedule-label" for="exam-date-${index}">DATA DA PROVA</label>
+        <input id="exam-date-${index}" class="exam-date-input" type="date" aria-label="Data da prova no dia ${index + 1}">
+        <span class="exam-schedule-label">DISCIPLINAS</span>
+        <div class="exam-subject-options">${disciplines.map((subject, subjectIndex) => `<label class="exam-subject-option"><input type="checkbox" value="${escapeHtml(subject)}" aria-label="${escapeHtml(subject)}"><span>${escapeHtml(subject)}</span></label>`).join("") || '<span class="exam-schedule-empty">Nenhuma disciplina encontrada.</span>'}</div>
+      </fieldset>`).join("");
+
+    const updatePreview = () => {
+      const slots = [...dayContainer.querySelectorAll(".exam-day-card")].map((card) => ({
+        weekday: card.querySelector(".exam-weekday-select").value,
+        date: card.querySelector(".exam-date-input").value,
+        subjects: [...card.querySelectorAll(".exam-subject-option input:checked")].map((input) => input.value)
+      })).filter((slot) => slot.date || slot.subjects.length);
+      const header = byId("exam-schedule-weekdays");
+      const dates = byId("exam-schedule-dates");
+      const subjectsRow = byId("exam-schedule-subjects");
+      if (!slots.length) {
+        preview.classList.add("hidden");
+        return;
+      }
+      const cells = slots.map((slot) => {
+        const dateText = slot.date ? formatScheduleDate(slot.date) : "DATA NÃO INFORMADA";
+        return { ...slot, dateText };
+      });
+      header.innerHTML = cells.map((slot) => `<th scope="col">${escapeHtml(slot.weekday)}</th>`).join("");
+      dates.innerHTML = cells.map((slot) => `<td><span class="exam-schedule-date">${escapeHtml(slot.dateText)}</span></td>`).join("");
+      subjectsRow.innerHTML = cells.map((slot) => `<td>${slot.subjects.length ? slot.subjects.map((subject) => `<span class="exam-schedule-subject">${escapeHtml(subject)}</span>`).join("") : '<span class="exam-schedule-no-subject">—</span>'}</td>`).join("");
+      preview.classList.remove("hidden");
+    };
+    dayContainer.onchange = updatePreview;
+    dayContainer.oninput = updatePreview;
+    updatePreview();
+  };
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const etapa = byId("sheet-stage").value;
+    const turma = byId("sheet-class").value;
+    const tipo = byId("sheet-assessment").value;
+    const configuredUrl = GOOGLE_SHEETS_CONFIG.webAppUrl.trim().replace(/\/exe(?=\?|$)/, "/exec");
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec(?:\?.*)?$/.test(configuredUrl)) {
+      showStatus("A URL do Web App não está configurada corretamente. Atualize a implantação do Apps Script.", "error");
+      return;
+    }
+    const token = globalThis.crypto?.randomUUID?.() || `consulta-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const iframe = document.createElement("iframe");
+    iframe.hidden = true;
+    iframe.title = "Resultado da consulta à planilha";
+    iframe.name = `sheet-query-${token}`;
+    iframe.src = `${configuredUrl}?action=list&etapa=${encodeURIComponent(etapa)}&turma=${encodeURIComponent(turma)}&tipo=${encodeURIComponent(tipo)}&token=${encodeURIComponent(token)}`;
+    const previous = document.querySelector("iframe[data-sheet-query]");
+    previous?.remove();
+    iframe.dataset.sheetQuery = "true";
+    document.body.append(iframe);
+
+    let timeoutId;
+    const onMessage = (messageEvent) => {
+      const response = messageEvent.data;
+      if (!response || response.type !== "criador-roteiros-sheet-query" || response.token !== token) return;
+      window.removeEventListener("message", onMessage);
+      window.clearTimeout(timeoutId);
+      iframe.remove();
+      searchButton.disabled = false;
+      searchButton.removeAttribute("aria-busy");
+      searchButton.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">search</span> Buscar roteiros';
+      if (!response.ok) {
+        showStatus(response.message || "Não foi possível consultar a planilha. Tente novamente.", "error");
+        resultsPanel.classList.add("hidden");
+        return;
+      }
+      const allRecords = Array.isArray(response.records) ? response.records : [];
+      const records = allRecords.filter((record) => {
+        const stageMatches = !record.etapa || normalizeStage(record.etapa) === normalizeStage(etapa);
+        const assessmentMatches = !record.tipo || normalizeAssessment(record.tipo) === normalizeAssessment(tipo);
+        return stageMatches && assessmentMatches;
+      });
+      renderResults(records, etapa, turma, tipo);
+      showStatus(records.length ? `Consulta concluída: ${records.length} roteiro(s) encontrado(s); as disciplinas sem cadastro também estão listadas.` : "Consulta concluída: nenhum roteiro encontrado; as disciplinas da turma estão listadas como sem cadastro.", "success");
+    };
+    window.addEventListener("message", onMessage);
+    searchButton.disabled = true;
+    searchButton.setAttribute("aria-busy", "true");
+    searchButton.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">progress_activity</span> Consultando…';
+    resultsPanel.classList.add("hidden");
+    showStatus(`Buscando ${etapa} · ${turma} · ${tipo} diretamente na planilha…`, "loading");
+    timeoutId = window.setTimeout(() => {
+      if (!searchButton.disabled) return;
+      window.removeEventListener("message", onMessage);
+      iframe.remove();
+      searchButton.disabled = false;
+      searchButton.removeAttribute("aria-busy");
+      searchButton.innerHTML = '<span class="material-symbols-rounded" aria-hidden="true">search</span> Buscar roteiros';
+      showStatus("A consulta excedeu o tempo esperado. Confira a implantação do Web App e tente novamente.", "error");
+    }, 20000);
+  });
+}
+
+/* A consulta de roteiros é independente dos dados locais deste navegador. */
 function initializeSavedRecords() {
+  if (document.body.dataset.page === "roteiros") return;
   const list = byId("saved-list");
   const jsonPreview = byId("saved-json");
   if (!list || !jsonPreview) return;
-
-  const render = () => {
-    const records = readRecords();
-    jsonPreview.textContent = records.length ? JSON.stringify(records, null, 2) : "Nenhum roteiro salvo ainda.";
-    if (!records.length) {
-      list.innerHTML = '<div class="empty-state"><span class="material-symbols-rounded" aria-hidden="true">inbox</span><span>Você ainda não organizou nenhum roteiro. Comece na página “Escrever roteiro”.</span></div>';
-      return;
-    }
-    list.innerHTML = records.map((record) => {
-      const subjectNames = (record.disciplinas || []).map((item) => item.disciplina).join(", ");
-      const chapterCount = (record.disciplinas || []).reduce((total, item) => total + (item.capitulos || []).length, 0);
-      return `<article class="saved-card"><div class="saved-card-top"><span class="segment-label">${escapeHtml(record.segmento)}</span><span class="segment-divider">|</span><span class="class-badge">${escapeHtml(record.turma)}</span></div><h3>${escapeHtml(record.docente)} · ${escapeHtml(record.etapa)}</h3><p>${escapeHtml(record.tipoAvaliacao)} · ${escapeHtml(subjectNames)}</p><p>${chapterCount} capítulo(s) · salvo em ${new Date(record.criadoEm).toLocaleDateString("pt-BR")}</p><div class="saved-card-actions"><button class="button-small remove-record" type="button" data-record-id="${escapeHtml(record.id)}"><span class="material-symbols-rounded" aria-hidden="true">delete</span> Excluir roteiro</button></div></article>`;
-    }).join("");
-    list.querySelectorAll(".remove-record").forEach((button) => button.addEventListener("click", () => {
-      const updated = readRecords().filter((record) => record.id !== button.dataset.recordId);
-      writeRecords(updated);
-      render();
-    }));
-  };
-  render();
 }
+
+/* 19. Formulário de contato demonstrativo: valida localmente sem prometer envio. */
 
 /* 19. Formulário de contato demonstrativo: valida localmente sem prometer envio. */
 function initializeContactForm() {
@@ -1253,18 +1469,24 @@ function resetFormOnPageLoad() {
 
 /* 21. Inicialização por página e gravação antes de trocar de arquivo ou aba. */
 document.addEventListener("DOMContentLoaded", () => {
-  restoreStateFromNavigation();
-  initializeNavigationStateTransfer();
+  const isSheetQueryPage = document.body.dataset.page === "roteiros";
+  if (!isSheetQueryPage) {
+    restoreStateFromNavigation();
+    initializeNavigationStateTransfer();
+  }
   initializeMenu();
   initializeAssessmentSelectors();
   initializeRosterSelectors();
   initializeIconSelects();
   initializeOrganizer();
+  initializeSheetSearch();
   resetFormOnPageLoad();
   initializeSavedRecords();
   initializeContactForm();
 
-  document.getElementById("roteiro-form")?.addEventListener("input", saveCurrentFormState);
-  document.getElementById("roteiro-form")?.addEventListener("change", saveCurrentFormState);
-  window.addEventListener("pagehide", saveCurrentFormState);
+  if (!isSheetQueryPage) {
+    document.getElementById("roteiro-form")?.addEventListener("input", saveCurrentFormState);
+    document.getElementById("roteiro-form")?.addEventListener("change", saveCurrentFormState);
+    window.addEventListener("pagehide", saveCurrentFormState);
+  }
 });

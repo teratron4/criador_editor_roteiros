@@ -967,3 +967,263 @@ body { background: #f3f8f2; color: #193329; }
 .discipline-option label:hover { border-color: #a8c9ad; }
 .discipline-option label .material-symbols-rounded { color: #347b4d; }
 .discipline-option input:checked + label { border-color: #76a982; background: #e8f3e9; color: #205d3c; }
+
+/* Tela Exibir roteiros: filtros e tabela consultados na planilha Google. */
+.roster-shell { width: min(100% - 48px, 920px); }
+.roster-shell .page-intro { align-items: center; }
+.sheet-search-panel, .sheet-results-panel { border-color: #cfe1d1; }
+.sheet-search-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; gap: 14px; margin-top: 18px; }
+.sheet-filter { display: grid; gap: 7px; }
+.sheet-filter .field-label { margin: 0; }
+.sheet-search-button { min-height: 48px; white-space: nowrap; }
+.sheet-search-button:disabled { cursor: wait; opacity: .72; }
+.sheet-search-button[aria-busy="true"] .material-symbols-rounded { animation: sheet-search-spin 1s linear infinite; }
+.sheet-search-status { display: flex; align-items: flex-start; gap: 8px; margin: 16px 0 0; padding: 12px 14px; border: 1px solid #dce8dd; border-radius: 11px; background: #f4f8f4; color: #526a58; font-size: 12px; }
+.sheet-search-status .material-symbols-rounded { flex: 0 0 auto; color: #347b4d; font-size: 18px; }
+.sheet-search-status.is-loading { border-color: #d4e4d6; background: #f1f7f1; }
+.sheet-search-status.is-loading .material-symbols-rounded { animation: sheet-search-spin 1s linear infinite; }
+.sheet-search-status.is-success { border-color: #c8e2cd; background: #eff8f0; color: #285f37; }
+.sheet-search-status.is-error { border-color: #efcfca; background: #fff4f2; color: #9d3934; }
+.sheet-search-status.is-error .material-symbols-rounded { color: #b93838; }
+.sheet-results-panel .section-heading { margin-bottom: 16px; }
+.sheet-results-panel .results-icon { background: #e7f2e8; color: #286b49; }
+.sheet-result-count { margin-left: auto; padding: 6px 10px; border: 1px solid #d6e7d8; border-radius: 999px; background: #f1f7f1; color: #315f43; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.sheet-table-wrap { overflow-x: auto; border: 1px solid #d8e6da; border-radius: 14px; }
+.sheet-content-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; }
+.sheet-content-table th, .sheet-content-table td { padding: 16px 18px; border-bottom: 1px solid #e5eee6; text-align: left; vertical-align: top; }
+.sheet-content-table thead th { background: #edf5ee; color: #315f43; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.sheet-content-table thead th:first-child { width: 25%; }
+.sheet-content-table tbody tr:last-child th, .sheet-content-table tbody tr:last-child td { border-bottom: 0; }
+.sheet-content-table tbody tr:nth-child(even) { background: #fbfdfb; }
+.sheet-content-table tbody th { min-width: 185px; color: #204d31; font-size: 14px; font-weight: 800; }
+.sheet-subject-name { display: inline-flex; align-items: flex-start; gap: 9px; }
+.sheet-subject-name .material-symbols-rounded { flex: 0 0 auto; color: #347b4d; font-size: 20px; }
+.sheet-content-entry + .sheet-content-entry { margin-top: 14px; padding-top: 13px; border-top: 1px dashed #d6e5d8; }
+.sheet-not-found { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid #a92f32; border-radius: 8px; background: linear-gradient(135deg, #b93838, #982f35); color: #fff; font-size: 11px; font-weight: 800; line-height: 1.3; box-shadow: 0 2px 6px rgba(142, 40, 45, .14); }
+.sheet-not-found .material-symbols-rounded { font-size: 15px; }
+.sheet-content-meta { margin-bottom: 7px; color: #718274; font-size: 10px; font-weight: 700; }
+.sheet-content-text { color: #344b3a; font-size: 13px; line-height: 1.75; white-space: normal; overflow-wrap: anywhere; }
+.sheet-empty-state { margin-top: 4px; padding: 22px; }
+@keyframes sheet-search-spin { to { transform: rotate(360deg); } }
+@media (max-width: 720px) {
+  .roster-shell { width: min(100% - 32px, 650px); }
+  .sheet-search-form { grid-template-columns: 1fr 1fr; }
+  .sheet-search-button { grid-column: 1 / -1; }
+  .sheet-content-table thead th:first-child { width: auto; }
+}
+@media (max-width: 520px) {
+  .roster-shell { width: min(100% - 24px, 480px); }
+  .sheet-search-form { grid-template-columns: 1fr; gap: 12px; }
+  .sheet-search-button { grid-column: auto; width: 100%; }
+  .sheet-results-panel .section-heading { align-items: flex-start; flex-wrap: wrap; }
+  .sheet-result-count { margin-left: auto; }
+  .sheet-table-wrap { overflow: visible; border: 0; }
+  .sheet-content-table, .sheet-content-table tbody, .sheet-content-table tr, .sheet-content-table th, .sheet-content-table td { display: block; width: 100%; }
+  .sheet-content-table thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .sheet-content-table tbody tr { margin-bottom: 12px; overflow: hidden; border: 1px solid #d8e6da; border-radius: 13px; background: #fff; box-shadow: 0 3px 10px rgba(35,83,52,.04); }
+  .sheet-content-table tbody tr:nth-child(even) { background: #fff; }
+  .sheet-content-table tbody th { min-width: 0; padding: 12px 14px; border-bottom: 1px solid #dce8dd; background: #edf5ee; }
+  .sheet-content-table tbody td { padding: 13px 14px; border-bottom: 0; }
+  .sheet-content-entry + .sheet-content-entry { margin-top: 12px; padding-top: 11px; }
+}
+
+/* Consulta por etapa: controles empilhados e leitura pronta para impressão. */
+body[data-page="roteiros"] .sheet-search-form {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 13px;
+  width: 100%;
+  max-width: none;
+}
+body[data-page="roteiros"] .sheet-filter .field-label {
+  color: #193329;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .045em;
+}
+body[data-page="roteiros"] .sheet-filter .field-label .material-symbols-rounded {
+  color: #ff8a54;
+}
+body[data-page="roteiros"] .sheet-search-button { justify-self: start; min-width: 210px; }
+.sheet-results-heading { min-width: 0; }
+.sheet-results-heading h2 { font-size: clamp(20px, 3vw, 26px); letter-spacing: -.02em; }
+.sheet-results-context { margin: 6px 0 0; color: #53695a; font-size: 12px; font-weight: 700; }
+.sheet-results-actions { display: flex; justify-content: flex-end; margin: -2px 0 14px; }
+.sheet-results-actions .button { background: #174b35; }
+.sheet-subject-cell { display: grid; justify-items: start; gap: 9px; }
+.sheet-content-table tbody th { font-size: 18px; }
+.sheet-subject-name { align-items: center; gap: 10px; font-size: clamp(17px, 2vw, 21px); line-height: 1.25; }
+.sheet-subject-name .material-symbols-rounded { color: #ff8a54; font-size: 23px; }
+.sheet-subject-teachers { display: grid; gap: 4px; padding-left: 33px; }
+.sheet-teacher-name { display: inline-flex; align-items: center; gap: 5px; color: #637369; font-size: 11px; font-weight: 700; }
+.sheet-teacher-name .material-symbols-rounded { color: #718274; font-size: 15px; }
+@media (max-width: 720px) {
+  body[data-page="roteiros"] .sheet-search-form { grid-template-columns: minmax(0, 1fr); }
+  body[data-page="roteiros"] .sheet-search-button { grid-column: auto; }
+}
+@media (max-width: 520px) {
+  body[data-page="roteiros"] .sheet-search-form { grid-template-columns: minmax(0, 1fr); }
+  body[data-page="roteiros"] .sheet-search-button { width: 100%; }
+  .sheet-results-actions .button { width: 100%; }
+  .sheet-subject-cell { gap: 6px; }
+  .sheet-subject-teachers { padding-left: 30px; }
+  .sheet-content-table tbody th .sheet-subject-name { font-size: 18px; }
+}
+
+@page { size: A4 portrait; margin: 8mm 9mm 8mm; }
+@media print {
+  html, body { min-width: 0; background: #fff !important; color: #193329 !important; }
+  body[data-page="roteiros"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body[data-page="roteiros"] .site-header,
+  body[data-page="roteiros"] .page-intro,
+  body[data-page="roteiros"] .roster-search-panel,
+  body[data-page="roteiros"] .site-footer,
+  body[data-page="roteiros"] .sheet-results-actions,
+  body[data-page="roteiros"] .sheet-result-count { display: none !important; }
+  body[data-page="roteiros"] .roster-shell { position: relative; isolation: isolate; width: 100%; max-width: none; min-height: 0; margin: 0; padding: 5mm 5mm 4mm; overflow: visible; background: #fff; }
+  body[data-page="roteiros"] .roster-shell::before,
+  body[data-page="roteiros"] .roster-shell::after { position: fixed; z-index: -1; display: block; content: ""; pointer-events: none; }
+  body[data-page="roteiros"] .roster-shell::before { inset: 3mm; border: 1px solid #dedfdd; border-radius: 2mm; background: radial-gradient(ellipse at 0% 0%, rgba(105,110,105,.10) 0 1px, transparent 1.4px) 0 0/8mm 8mm, radial-gradient(ellipse at 100% 100%, rgba(105,110,105,.08) 0 1px, transparent 1.4px) 0 0/9mm 9mm; }
+  body[data-page="roteiros"] .roster-shell::after { top: 0; right: 0; bottom: 0; width: 14mm; background: linear-gradient(135deg, transparent 15%, rgba(90,96,91,.05) 15.4% 16%, transparent 16.4% 31%, rgba(90,96,91,.07) 31.4% 32%, transparent 32.4% 49%, rgba(90,96,91,.05) 49.4% 50%, transparent 50.4%); }
+  body[data-page="roteiros"] .sheet-results-panel,
+  body[data-page="roteiros"] .sheet-results-panel.hidden { position: relative; z-index: 1; display: block !important; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+  body[data-page="roteiros"] .sheet-results-panel > .section-heading { margin: 0 0 3mm; padding: 0 0 2mm; border-bottom: 1.5px solid #286b49; }
+  body[data-page="roteiros"] .sheet-results-panel .section-icon { display: none; }
+  body[data-page="roteiros"] .sheet-results-heading .step-label { color: #286b49; font-size: 9pt; letter-spacing: .14em; }
+  body[data-page="roteiros"] .sheet-results-heading h2 { margin: 1mm 0; color: #174b35; font-size: 17pt; line-height: 1.08; }
+  body[data-page="roteiros"] .sheet-results-context { margin-top: 1mm; color: #53695a; font-size: 9pt; }
+  body[data-page="roteiros"] .sheet-table-wrap { overflow: visible; border: 0; border-radius: 0; }
+  body[data-page="roteiros"] .sheet-content-table { display: table; width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 1.2mm; background: transparent; }
+  body[data-page="roteiros"] .sheet-content-table thead { position: static; display: table-header-group; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; }
+  body[data-page="roteiros"] .sheet-content-table tbody { display: table-row-group; width: auto; }
+  body[data-page="roteiros"] .sheet-content-table tbody tr { display: table-row; width: auto; }
+  body[data-page="roteiros"] .sheet-content-table thead th { padding: 1.6mm 3mm; border: 0; background: #e8f3e9 !important; color: #205d3c; font-size: 8pt; letter-spacing: .08em; }
+  body[data-page="roteiros"] .sheet-content-table thead th:first-child { width: 36%; border-radius: 2mm 0 0 2mm; }
+  body[data-page="roteiros"] .sheet-content-table thead th:last-child { width: 64%; border-radius: 0 2mm 2mm 0; }
+  body[data-page="roteiros"] .sheet-content-table tbody tr { break-inside: avoid; page-break-inside: avoid; }
+  body[data-page="roteiros"] .sheet-content-table tbody th,
+  body[data-page="roteiros"] .sheet-content-table tbody td { display: table-cell; background: #f8fbf8 !important; box-shadow: none; }
+  body[data-page="roteiros"] .sheet-content-table tbody th { width: 36%; min-width: 0; padding: 2mm 3mm; border: 1px solid #d4e4d6; border-right: 0; border-radius: 2mm 0 0 2mm; color: #205d3c; text-align: left; vertical-align: top; }
+  body[data-page="roteiros"] .sheet-content-table tbody td { width: 64%; padding: 2mm 3mm; border: 1px solid #d4e4d6; border-radius: 0 2mm 2mm 0; color: #344b3a; text-align: left; vertical-align: top; }
+  body[data-page="roteiros"] .sheet-content-table tbody tr:nth-child(even) th,
+  body[data-page="roteiros"] .sheet-content-table tbody tr:nth-child(even) td { background: #f1f7f1 !important; }
+  body[data-page="roteiros"] .sheet-subject-cell { justify-items: start; gap: .5mm; }
+  body[data-page="roteiros"] .sheet-subject-name { align-items: flex-start; gap: 1.2mm; color: #174b35; font-size: 11pt; line-height: 1.1; }
+  body[data-page="roteiros"] .sheet-subject-name .material-symbols-rounded { color: #398254; font-size: 12pt; }
+  body[data-page="roteiros"] .sheet-subject-teachers { gap: 0; padding-left: 0; margin-top: -.2mm; }
+  body[data-page="roteiros"] .sheet-teacher-name { color: #5e6d62; font-size: 8pt; font-weight: 600; line-height: 1.15; }
+  body[data-page="roteiros"] .sheet-content-entry + .sheet-content-entry { margin-top: 1mm; padding-top: 1mm; border-top: 1px dashed #b8ccb9; }
+  body[data-page="roteiros"] .sheet-content-meta { margin-bottom: .5mm; color: #687a70; font-size: 7pt; }
+  body[data-page="roteiros"] .sheet-content-text { color: #263d2d; font-size: 9pt; line-height: 1.25; overflow-wrap: anywhere; }
+  body[data-page="roteiros"] .sheet-not-found { padding: 1mm 2mm; border-color: #a92f32; background: #b93838 !important; color: #fff; font-size: 8pt; line-height: 1.15; }
+  body[data-page="roteiros"] .sheet-not-found .material-symbols-rounded { display: none; }
+  body[data-page="roteiros"] .sheet-empty-state { border: 1px solid #d4e4d6; background: #f8fbf8 !important; color: #344b3a; }
+}
+
+/* Planejador de provas: calendário por dia e quadro semanal equivalente à referência. */
+.exam-schedule-editor { margin-top: 22px; padding-top: 19px; border-top: 1px solid #d8e6da; }
+.exam-schedule-heading { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 17px; }
+.exam-schedule-heading > .material-symbols-rounded { color: #ff8a54; font-size: 25px; }
+.exam-schedule-heading h3 { margin: 2px 0 3px; color: #174b35; font-size: 18px; }
+.exam-schedule-heading p { margin: 0; color: #687a70; font-size: 12px; }
+.exam-schedule-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.exam-day-card { min-width: 0; margin: 0; padding: 11px; border: 1px solid #cfe1d1; border-radius: 12px; background: #fbfdfb; }
+.exam-day-card legend { padding: 0 5px; color: #205d3c; font-size: 11px; font-weight: 800; }
+.exam-day-card legend .material-symbols-rounded { color: #ff8a54; font-size: 16px; vertical-align: -3px; }
+.exam-schedule-label { display: block; margin: 9px 0 4px; color: #42594a; font-size: 9px; font-weight: 800; letter-spacing: .035em; }
+.exam-day-card select, .exam-day-card input[type="date"] { width: 100%; min-height: 36px; padding: 6px 7px; border: 1px solid #bfd3c1; border-radius: 7px; background: #fff; color: #193329; font-size: 10px; }
+.exam-subject-options { display: grid; gap: 5px; max-height: 165px; overflow: auto; margin-top: 5px; }
+.exam-subject-option { display: flex; align-items: flex-start; gap: 6px; color: #344b3a; font-size: 10px; line-height: 1.25; cursor: pointer; }
+.exam-subject-option input { flex: 0 0 auto; width: 13px; height: 13px; margin: 0; accent-color: #216342; }
+.exam-schedule-empty { color: #687a70; font-size: 10px; }
+.exam-schedule-hint { margin: 12px 0 0; color: #687a70; font-size: 11px; }
+.exam-schedule-preview { margin-top: 22px; padding-top: 17px; border-top: 1px solid #d8e6da; }
+.exam-schedule-preview h3 { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 0 0 12px; color: #1751a0; font-size: 15px; font-weight: 800; text-align: center; }
+.exam-schedule-preview h3 .material-symbols-rounded { font-size: 20px; }
+.exam-schedule-table-wrap { overflow-x: auto; border: 1px solid #c8dafb; border-radius: 5px; }
+.exam-schedule-table { width: 100%; min-width: 640px; border-collapse: collapse; table-layout: fixed; background: #fff; }
+.exam-schedule-table th { padding: 9px 5px; border: 1px solid #d5e2fa; background: #e7efff; color: #174b9b; font-size: 9px; font-weight: 800; text-align: center; }
+.exam-schedule-table td { width: 20%; padding: 7px 5px; border: 1px solid #d5e2fa; color: #173b70; font-size: 10px; font-weight: 700; text-align: center; vertical-align: top; }
+.exam-schedule-date { display: block; padding: 5px 3px; border: 1px solid #88aaff; border-radius: 4px; background: #fff; color: #173b70; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.exam-schedule-subject { display: block; padding: 2px 0; color: #14366b; font-size: 10px; line-height: 1.2; text-transform: uppercase; }
+.exam-schedule-no-subject { color: #8b99ad; font-weight: 500; }
+@media (max-width: 900px) { .exam-schedule-days { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .exam-schedule-days { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 440px) { .exam-schedule-days { grid-template-columns: 1fr; } }
+@media print {
+  body[data-page="roteiros"] .exam-schedule-editor { display: none !important; }
+  body[data-page="roteiros"] .exam-schedule-preview:not(.hidden) { display: block !important; break-inside: avoid; page-break-inside: avoid; margin-top: 4mm; padding-top: 3mm; }
+  body[data-page="roteiros"] .exam-schedule-preview h3 { margin-bottom: 2mm; color: #1751a0 !important; font-size: 10pt; }
+  body[data-page="roteiros"] .exam-schedule-table { min-width: 0; }
+  body[data-page="roteiros"] .exam-schedule-table th { padding: 1.5mm 1mm; font-size: 7pt; }
+  body[data-page="roteiros"] .exam-schedule-table td { padding: 1.5mm 1mm; font-size: 7pt; }
+  body[data-page="roteiros"] .exam-schedule-date { padding: 1mm; font-size: 7pt; }
+  body[data-page="roteiros"] .exam-schedule-subject { font-size: 6.5pt; }
+}
+
+
+/* Cronogramas após a busca: identidade verde e tipografia legível na tela e no A4. */
+.schedule-control-panel { margin-top: 16px; border-color: #cfe1d1; }
+.schedule-control-panel .exam-schedule-editor { margin-top: 0; padding-top: 0; border-top: 0; }
+.exam-schedule-heading > .material-symbols-rounded,
+.exam-day-card legend .material-symbols-rounded { color: #347b4d; }
+.exam-schedule-heading h3 { color: #174b35; }
+.exam-day-card { border-color: #cfe1d1; background: #f8fbf8; }
+.exam-schedule-label { color: #315f43; font-size: 12px; }
+.exam-day-card select, .exam-day-card input[type="date"] { min-height: 42px; font-size: 15px; }
+.exam-subject-options { gap: 7px; }
+.exam-subject-option { color: #263d2d; font-size: 15px; line-height: 1.3; }
+.exam-subject-option input { width: 16px; height: 16px; }
+.exam-schedule-empty, .exam-schedule-hint { font-size: 14px; }
+.exam-schedule-preview { border-top-color: #cfe1d1; }
+.exam-schedule-preview h3,
+.second-call-editor h3,
+.second-call-preview h3 {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  margin: 0 0 12px; color: #174b35; font-size: clamp(20px, 3vw, 26px);
+  font-weight: 800; letter-spacing: -.02em; line-height: 1.15; text-align: center;
+}
+.exam-schedule-preview h3 .material-symbols-rounded,
+.second-call-editor h3 .material-symbols-rounded,
+.second-call-preview h3 .material-symbols-rounded { color: #347b4d; font-size: 1em; }
+.exam-schedule-table-wrap { border-color: #cfe1d1; border-radius: 8px; }
+.exam-schedule-table { min-width: 0; }
+.exam-schedule-table th { padding: 10px 6px; border-color: #cfe1d1; background: #e8f3e9; color: #205d3c; font-size: 16px; line-height: 1.2; }
+.exam-schedule-table td { padding: 9px 6px; border-color: #d4e4d6; color: #263d2d; font-size: 16px; }
+.exam-schedule-date { padding: 6px 4px; border-color: #a8c9ad; background: #f8fbf8; color: #174b35; font-size: 16px; font-weight: 700; white-space: normal; }
+.exam-schedule-subject { padding: 3px 0; color: #204d31; font-size: 16px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.exam-schedule-no-subject { color: #718274; font-size: 16px; }
+.second-call-editor { margin-top: 22px; padding-top: 17px; border-top: 1px solid #d8e6da; }
+.second-call-date-grid, .second-call-preview-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 12px; border: 1px solid #cfe1d1; border-radius: 10px; background: #fbfdfb; }
+.second-call-date-field { display: grid; gap: 6px; min-width: 0; }
+.second-call-date-field > span, .second-call-preview-dates > div > span { color: #315f43; font-size: 12px; font-weight: 800; text-align: center; }
+.second-call-date-field input { width: 100%; min-height: 42px; padding: 7px 9px; border: 1px solid #a8c9ad; border-radius: 7px; background: #fff; color: #193329; font: inherit; font-size: 16px; text-align: center; }
+.second-call-preview { margin-top: 16px; padding-top: 12px; border-top: 1px solid #d8e6da; break-inside: avoid; page-break-inside: avoid; }
+.second-call-preview-dates > div { display: grid; align-content: center; gap: 8px; min-width: 0; padding: 9px; border: 1px solid #d4e4d6; border-radius: 7px; background: #f8fbf8; text-align: center; }
+.second-call-preview-dates strong { color: #174b35; font-size: 17px; letter-spacing: .02em; }
+@media (max-width: 620px) {
+  .exam-schedule-days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .exam-schedule-table th, .exam-schedule-table td { padding: 7px 3px; font-size: 13px; }
+  .exam-schedule-date, .exam-schedule-subject { font-size: 13px; }
+}
+@media (max-width: 440px) {
+  .exam-schedule-days { grid-template-columns: 1fr; }
+  .second-call-date-grid, .second-call-preview-dates { grid-template-columns: 1fr; }
+}
+@media print {
+  body[data-page="roteiros"] .schedule-control-panel { display: none !important; }
+  body[data-page="roteiros"] .exam-schedule-preview:not(.hidden) { margin-top: 3mm; padding-top: 2mm; }
+  body[data-page="roteiros"] .exam-schedule-preview h3,
+  body[data-page="roteiros"] .second-call-preview h3 { margin-bottom: 1.5mm; color: #174b35 !important; font-size: 17pt; line-height: 1.08; }
+  body[data-page="roteiros"] .exam-schedule-table-wrap { overflow: visible; border-color: #cfe1d1; }
+  body[data-page="roteiros"] .exam-schedule-table th { padding: 1.5mm 1mm; background: #e8f3e9 !important; color: #205d3c !important; font-size: 10pt; }
+  body[data-page="roteiros"] .exam-schedule-table td { padding: 1.5mm 1mm; color: #263d2d !important; font-size: 10pt; }
+  body[data-page="roteiros"] .exam-schedule-date { padding: .8mm; background: #f8fbf8 !important; color: #174b35 !important; font-size: 10pt; }
+  body[data-page="roteiros"] .exam-schedule-subject { color: #204d31 !important; font-size: 10pt; line-height: 1.2; }
+  body[data-page="roteiros"] .exam-schedule-no-subject { font-size: 10pt; }
+  body[data-page="roteiros"] .second-call-preview { margin-top: 3mm; padding-top: 2mm; }
+  body[data-page="roteiros"] .second-call-preview-dates { gap: 2mm; padding: 2mm; border-color: #cfe1d1; background: #fbfdfb !important; }
+  body[data-page="roteiros"] .second-call-preview-dates > div { gap: 1.5mm; padding: 2mm; background: #f8fbf8 !important; }
+  body[data-page="roteiros"] .second-call-preview-dates > div > span { color: #315f43 !important; font-size: 8pt; }
+  body[data-page="roteiros"] .second-call-preview-dates strong { color: #174b35 !important; font-size: 12pt; }
+}

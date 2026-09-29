@@ -2,7 +2,7 @@ CRIADOR E EDITOR DE ROTEIROS
 
 Conteúdo do projeto
 - index.html: formulário para seleção de avaliação e docente, com turmas e disciplinas correspondentes.
-- criando-roteiros.html: consulta aos roteiros salvos localmente neste navegador.
+- criando-roteiros.html: consulta aos roteiros publicados na planilha por etapa, turma e tipo de avaliação; inclui configuração de datas e disciplinas para montar cronograma de provas, com opção de salvar a visualização em PDF.
 - sobre.html e contato.html: páginas informativas e formulário demonstrativo.
 - styles.css: estilos do aplicativo. A integração não altera este arquivo nem a estrutura HTML.
 - app.js: validação, organização local, diálogo de envio e conexão com o Web App.
